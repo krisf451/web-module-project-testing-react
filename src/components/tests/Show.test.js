@@ -1,26 +1,96 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
-import Show from './../Show';
+import Show from "./../Show";
 
 const testShow = {
-    //add in approprate test data structure here.
-}
+  //add in approprate test data structure here.
+  image: {
+    medium:
+      "https://static.tvmaze.com/uploads/images/medium_portrait/200/501942.jpg",
+    original:
+      "https://static.tvmaze.com/uploads/images/original_untouched/200/501942.jpg",
+  },
+  name: "Stranger Things Show Name Test",
+  seasons: [
+    {
+      id: 0,
+      name: "season one",
+      episodes: [
+        {
+          id: 1234,
+          name: "Episode 1: THE TEST",
+          image:
+            "https://www.tvmaze.com/episodes/553946/stranger-things-1x01-chapter-one-the-vanishing-of-will-byers",
+        },
+        {
+          id: 4567,
+          name: "Episode 2: THE TEST",
+          image:
+            "https://www.tvmaze.com/episodes/553946/stranger-things-1x01-chapter-one-the-vanishing-of-will-byers",
+        },
+      ],
+    },
+    {
+      id: 1,
+      name: "season two",
+      episodes: [
+        {
+          id: 90839483,
+          name: "Episode 1: Season 2 : THE TEST",
+          image:
+            "https://www.tvmaze.com/episodes/553946/stranger-things-1x01-chapter-one-the-vanishing-of-will-byers",
+        },
+        {
+          id: 999039402,
+          name: "Episode 2: Season 2 : THE TEST",
+          image:
+            "https://www.tvmaze.com/episodes/553946/stranger-things-1x01-chapter-one-the-vanishing-of-will-byers",
+        },
+      ],
+    },
+  ],
+  summary: "A test summary for a show",
+};
 
-test('renders testShow and no selected Season without errors', ()=>{
+test("renders testShow and no selected Season without errors", () => {
+  render(<Show show={testShow} selectedSeason="none" />);
 });
 
-test('renders Loading component when prop show is null', () => {
+test("renders Loading component when prop show is null", () => {
+  render(<Show show={null} />);
+  const loading = screen.getByTestId("loading-container");
+  expect(loading).toBeInTheDocument();
+  expect(loading).toHaveTextContent(/Fetching data.../i);
+  expect(loading).toBeTruthy();
 });
 
-test('renders same number of options seasons are passed in', ()=>{
+test("renders same number of options seasons are passed in", () => {
+  render(<Show show={testShow} selectedSeason="none" />);
+  const seasonOptions = screen.getAllByTestId("season-option");
+  expect(seasonOptions).toBeTruthy();
+  expect(seasonOptions.length).toBe(2);
 });
 
-test('handleSelect is called when an season is selected', () => {
+test("handleSelect is called when an season is selected", () => {
+  const handleSelectMock = jest.fn();
+  render(
+    <Show show={testShow} selectedSeason="1" handleSelect={handleSelectMock} />
+  );
+  const selectSeason = screen.getByLabelText(/select a season/i);
+  userEvent.selectOptions(selectSeason, ["0"]);
+  expect(handleSelectMock).toBeCalled();
 });
 
-test('component renders when no seasons are selected and when rerenders with a season passed in', () => {
+test("component renders when no seasons are selected and when rerenders with a season passed in", () => {
+  const { rerender } = render(<Show show={testShow} selectedSeason="none" />);
+  let episodesContainer = screen.queryByTestId("episodes-container");
+  expect(episodesContainer).toBeFalsy();
+  expect(episodesContainer).not.toBeInTheDocument();
+  rerender(<Show show={testShow} selectedSeason="0" />);
+  episodesContainer = screen.queryByTestId("episodes-container");
+  expect(episodesContainer).toBeTruthy();
 });
 
 //Tasks:
